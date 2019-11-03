@@ -19,7 +19,8 @@ class _ListScreenState extends State<ListScreen> {
       listKey.currentState
           .insertItem(items.length, duration: const Duration(seconds: 1));
       int id = rng.nextInt(5000);
-      items.add(new Item(name: "App $id", url: "www.pdpoint.com.br"));
+      items.add(new Item(items.length + 1,
+          name: "App $id", url: "www.pdpoint.com.br"));
     });
   }
 

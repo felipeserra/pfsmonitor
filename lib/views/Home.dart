@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:pfsmonitor/appurl.dart';
+import 'package:pfsmonitor/bloc/Repository.dart';
 import 'package:pfsmonitor/componets/ListViewEffect.dart';
 import 'package:validators/validators.dart';
 import 'package:http/http.dart' as http;
@@ -10,9 +11,28 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
+  final dbHelper = DatabaseHelper.instance;
   List<StatItem> _list = List<StatItem>();
   List<String> _protocolos = <String>['http', 'https'];
   String _protocolo = 'http';
+  void _inserir(Item item) async {
+    Map<String, dynamic> row = {
+      DatabaseHelper.columnNome: item.name,
+      DatabaseHelper.columnUrl: item.url,
+      DatabaseHelper.columnProtocolo: item.protocolo,
+    };
+    final id = await dbHelper.insert(row);
+    print('linha inserida id: $id');
+  }
+
+  void _deletar(Item item) async {
+    final id = await dbHelper.queryRowCount();
+    if (id > 0) {
+      final linhaDeletada = await dbHelper.delete(item.id);
+      print('Deletada(s) $linhaDeletada linha(s): linha $id');
+    }
+  }
+
   Future<bool> getStatus(String url) async {
     try {
       final response = await http.get(url);
@@ -24,11 +44,22 @@ class _Home extends State<Home> {
 
   @override
   void initState() {
+    getStatus("http://www.pdpoint.com.br").then((retorno) {
+      setState(() {
+        var item = new Item(_list.length + 1,
+            name: "PDPoint - HTTP",
+            url: "http://www.pdpoint.com.br",
+            status: retorno,
+            statuscolor: retorno ? Colors.green : Colors.red);
+        _inserir(item);
+        _list.add(StatItem(item: item));
+      });
+    });
     getStatus("https://www.pdpoint.com.br/Account/Login").then((retorno) {
       setState(() {
         _list.add(StatItem(
-            item: new Item(
-                name: "PDPoint",
+            item: new Item(_list.length + 1,
+                name: "PDPoint - HTTPS",
                 url: "https://www.pdpoint.com.br/Account/Login",
                 status: retorno,
                 statuscolor: retorno ? Colors.green : Colors.red)));
@@ -37,9 +68,19 @@ class _Home extends State<Home> {
     getStatus("https://www.enzimais.com.br").then((retorno) {
       setState(() {
         _list.add(StatItem(
-            item: new Item(
-                name: "Enzimais",
+            item: new Item(_list.length + 1,
+                name: "Enzimais - HTTPS",
                 url: "https://www.enzimais.com.br",
+                status: retorno,
+                statuscolor: retorno ? Colors.green : Colors.red)));
+      });
+    });
+    getStatus("http://www.enzimais.com.br").then((retorno) {
+      setState(() {
+        _list.add(StatItem(
+            item: new Item(_list.length + 1,
+                name: "Enzimais - HTTP",
+                url: "http://www.enzimais.com.br",
                 status: retorno,
                 statuscolor: retorno ? Colors.green : Colors.red)));
       });
@@ -47,9 +88,19 @@ class _Home extends State<Home> {
     getStatus("https://www.pspreports.com.br").then((retorno) {
       setState(() {
         _list.add(StatItem(
-            item: new Item(
-                name: "PSPReports",
+            item: new Item(_list.length + 1,
+                name: "PSPReports - HTTPS",
                 url: "https://www.pspreports.com.br",
+                status: retorno,
+                statuscolor: retorno ? Colors.green : Colors.red)));
+      });
+    });
+    getStatus("http://www.pspreports.com.br").then((retorno) {
+      setState(() {
+        _list.add(StatItem(
+            item: new Item(_list.length + 1,
+                name: "PSPReports - HTTP",
+                url: "http://www.pspreports.com.br",
                 status: retorno,
                 statuscolor: retorno ? Colors.green : Colors.red)));
       });
@@ -57,9 +108,20 @@ class _Home extends State<Home> {
     getStatus("http://essencial.integramedical.com.br").then((retorno) {
       setState(() {
         _list.add(StatItem(
-            item: new Item(
-                name: "Gestão Externos",
+            item: new Item(_list.length + 1,
+                name: "Gestão Externos - HTTP",
                 url: "http://essencial.integramedical.com.br",
+                status: retorno,
+                statuscolor: retorno ? Colors.green : Colors.red)));
+      });
+    });
+    getStatus("http://programaentrenos.suporteaopaciente.com.br/")
+        .then((retorno) {
+      setState(() {
+        _list.add(StatItem(
+            item: new Item(_list.length + 1,
+                name: "Programa Entre Nós - HTTP",
+                url: "http://programaentrenos.suporteaopaciente.com.br/",
                 status: retorno,
                 statuscolor: retorno ? Colors.green : Colors.red)));
       });
@@ -172,8 +234,9 @@ class _Home extends State<Home> {
                         getStatus(url).then((retorno) {
                           setState(() {
                             _list.add(StatItem(
-                                item: new Item(
-                                    name: name,
+                                item: new Item(_list.length + 1,
+                                    name:
+                                        name + " - " + _protocolo.toUpperCase(),
                                     url: url,
                                     status: retorno,
                                     statuscolor:

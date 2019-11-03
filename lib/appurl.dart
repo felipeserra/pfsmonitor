@@ -3,14 +3,17 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:http/http.dart' as http;
 
 class Item {
+  final int id;
   String name;
   String url;
+  String protocolo;
   bool status;
   Color statuscolor;
-  Item(
+  Item(this.id,
       {@required this.name,
       @required this.url,
       this.status = true,
+      this.protocolo = "http",
       this.statuscolor = Colors.grey});
 }
 
