@@ -39,7 +39,7 @@ class DatabaseHelper {
             $columnId INTEGER PRIMARY KEY,
             $columnNome TEXT NOT NULL,
             $columnUrl TEXT NOT NULL,
-            $columnProtocolo TEXT NULL,
+            $columnProtocolo TEXT NULL
           )
           ''');
   }

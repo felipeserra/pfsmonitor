@@ -25,6 +25,69 @@ class _Home extends State<Home> {
     print('linha inserida id: $id');
   }
 
+  Future _popularItens() async {
+    var listaItem = List<Item>();
+    var item = new Item(listaItem.length + 1,
+        name: "PDPoint - HTTP",
+        url: "http://www.pdpoint.com.br",
+        protocolo: "http");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "PDPoint - HTTPS",
+        url: "https://www.pdpoint.com.br",
+        protocolo: "https");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "Enzimais - HTTPS",
+        url: "https://www.enzimais.com.br",
+        protocolo: "https");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "Enzimais - HTTP",
+        url: "http://www.enzimais.com.br",
+        protocolo: "http");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "PSPReports - HTTPS",
+        url: "https://www.pspreports.com.br",
+        protocolo: "https");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "PSPReports - HTTP",
+        url: "http://www.pspreports.com.br",
+        protocolo: "http");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "Gestão Externos - HTTP",
+        url: "http://essencial.integramedical.com.br",
+        protocolo: "http");
+    listaItem.add(item);
+    item = new Item(listaItem.length + 1,
+        name: "Programa Entre Nós - HTTP",
+        url: "http://programaentrenos.suporteaopaciente.com.br/",
+        protocolo: "http");
+    listaItem.add(item);
+    listaItem.forEach((value) async => _inserir(value));
+  }
+
+  Future _consultar() async {
+    final todasLinhas = await dbHelper.queryAllRows();
+    print('Consulta todas as linhas:');
+    todasLinhas.forEach((row) async => {
+          await getStatus(row['url']).then((retorno) {
+            setState(() {
+              var item = new Item(row['id'],
+                  name: row['nome'],
+                  url: row['url'],
+                  status: retorno,
+                  statuscolor: retorno ? Colors.green : Colors.red);
+              _list.add(StatItem(item: item));
+            });
+          })
+        });
+    BotToast.closeAllLoading();
+  }
+
   void _deletar(Item item) async {
     final id = await dbHelper.queryRowCount();
     if (id > 0) {
@@ -42,91 +105,19 @@ class _Home extends State<Home> {
     }
   }
 
+  Future inicio() async {
+    BotToast.showLoading();
+    final id = await dbHelper.queryRowCount();
+    if (id <= 0) {
+      await _popularItens().then((onValue) => _consultar());
+    } else {
+      await _consultar();
+    }
+  }
+
   @override
   void initState() {
-    getStatus("http://www.pdpoint.com.br").then((retorno) {
-      setState(() {
-        var item = new Item(_list.length + 1,
-            name: "PDPoint - HTTP",
-            url: "http://www.pdpoint.com.br",
-            status: retorno,
-            statuscolor: retorno ? Colors.green : Colors.red);
-        _inserir(item);
-        _list.add(StatItem(item: item));
-      });
-    });
-    getStatus("https://www.pdpoint.com.br/Account/Login").then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "PDPoint - HTTPS",
-                url: "https://www.pdpoint.com.br/Account/Login",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-    getStatus("https://www.enzimais.com.br").then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "Enzimais - HTTPS",
-                url: "https://www.enzimais.com.br",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-    getStatus("http://www.enzimais.com.br").then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "Enzimais - HTTP",
-                url: "http://www.enzimais.com.br",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-    getStatus("https://www.pspreports.com.br").then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "PSPReports - HTTPS",
-                url: "https://www.pspreports.com.br",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-    getStatus("http://www.pspreports.com.br").then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "PSPReports - HTTP",
-                url: "http://www.pspreports.com.br",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-    getStatus("http://essencial.integramedical.com.br").then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "Gestão Externos - HTTP",
-                url: "http://essencial.integramedical.com.br",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-    getStatus("http://programaentrenos.suporteaopaciente.com.br/")
-        .then((retorno) {
-      setState(() {
-        _list.add(StatItem(
-            item: new Item(_list.length + 1,
-                name: "Programa Entre Nós - HTTP",
-                url: "http://programaentrenos.suporteaopaciente.com.br/",
-                status: retorno,
-                statuscolor: retorno ? Colors.green : Colors.red)));
-      });
-    });
-
+    inicio();
     super.initState();
   }
 
@@ -233,14 +224,14 @@ class _Home extends State<Home> {
                         BotToast.showLoading();
                         getStatus(url).then((retorno) {
                           setState(() {
-                            _list.add(StatItem(
-                                item: new Item(_list.length + 1,
-                                    name:
-                                        name + " - " + _protocolo.toUpperCase(),
-                                    url: url,
-                                    status: retorno,
-                                    statuscolor:
-                                        retorno ? Colors.green : Colors.red)));
+                            var itemList = new Item(_list.length + 1,
+                                name: name + " - " + _protocolo.toUpperCase(),
+                                url: url,
+                                status: retorno,
+                                statuscolor:
+                                    retorno ? Colors.green : Colors.red);
+                            _inserir(itemList);
+                            _list.add(StatItem(item: itemList));
                             texto =
                                 'Url: ${url} ${retorno ? "on-line" : "off-line"}';
                             BotToast.closeAllLoading();
@@ -266,6 +257,7 @@ class _Home extends State<Home> {
       var idx = _list.length - 1;
       if (idx >= 0) {
         print(idx);
+        _deletar(_list[idx].item);
         _list.removeAt(idx);
       }
     });
