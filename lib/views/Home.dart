@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:pfsmonitor/appurl.dart';
@@ -71,6 +73,7 @@ class _Home extends State<Home> {
   }
 
   Future _consultar() async {
+    _list.clear();
     final todasLinhas = await dbHelper.queryAllRows();
     print('Consulta todas as linhas:');
     todasLinhas.forEach((row) async => {
@@ -119,6 +122,9 @@ class _Home extends State<Home> {
   void initState() {
     inicio();
     super.initState();
+    Timer.periodic(Duration(minutes: 15), (timer) {
+      inicio();
+    });
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -265,27 +271,35 @@ class _Home extends State<Home> {
 
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: AppBar(
-          title: Image.asset("images/logo.png"),
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _addItem,
-            ),
-            IconButton(
-              icon: const Icon(Icons.remove),
-              onPressed: _removeItem,
-            )
-          ],
-        ),
-        body: new Container(
-            child: new Container(
-                padding: EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height,
-                child: new ListViewEffect(
-                    duration: _duration,
-                    children:
-                        _list.map((s) => _buildWidgetExample(s)).toList()))));
+      appBar: AppBar(
+        title: Image.asset("images/logo.png"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _addItem,
+          ),
+          IconButton(
+            icon: const Icon(Icons.remove),
+            onPressed: _removeItem,
+          )
+        ],
+      ),
+      body: new Container(
+          child: new Container(
+              padding: EdgeInsets.all(10),
+              height: MediaQuery.of(context).size.height,
+              child: new ListViewEffect(
+                  duration: _duration,
+                  children:
+                      _list.map((s) => _buildWidgetExample(s)).toList()))),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _consultar();
+        },
+        child: Icon(Icons.refresh),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   Widget _buildWidgetExample(StatItem statitem) {
